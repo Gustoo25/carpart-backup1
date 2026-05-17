@@ -67,7 +67,12 @@ export async function POST(request: Request) {
       line_items: lineItems,
       success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/cart`,
-      shipping_address_collection: { allowed_countries: ["US", "CA"] }
+      shipping_address_collection: { allowed_countries: ["US", "CA"] },
+      // Webhook handler reads this back to persist line items by slug.
+      // Stripe metadata caps values at 500 chars — fine for ~10 items.
+      // If carts ever get larger, store the cart in the DB and put its
+      // ID here instead.
+      metadata: { cart: JSON.stringify(body.items) }
     });
 
     return NextResponse.json({ url: session.url });

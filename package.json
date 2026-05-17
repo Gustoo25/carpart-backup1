@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "next": "15.1.6",
@@ -15,6 +19,8 @@
     "react-dom": "19.0.0",
     "stripe": "17.5.0",
     "@stripe/stripe-js": "5.5.0",
+    "@neondatabase/serverless": "0.10.4",
+    "drizzle-orm": "0.38.4",
     "lucide-react": "0.469.0",
     "clsx": "2.1.1"
   },
@@ -27,6 +33,8 @@
     "postcss": "8.4.49",
     "autoprefixer": "10.4.20",
     "eslint": "9.18.0",
-    "eslint-config-next": "15.1.6"
+    "eslint-config-next": "15.1.6",
+    "drizzle-kit": "0.30.2",
+    "dotenv": "16.4.7"
   }
 }
