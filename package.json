@@ -20,6 +20,8 @@
     "stripe": "17.5.0",
     "@stripe/stripe-js": "5.5.0",
     "@neondatabase/serverless": "0.10.4",
+    "@upstash/ratelimit": "2.0.5",
+    "@upstash/redis": "1.34.3",
     "drizzle-orm": "0.38.4",
     "lucide-react": "0.469.0",
     "clsx": "2.1.1"

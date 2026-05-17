@@ -32,6 +32,7 @@ Copy `.env.example` to `.env.local` and fill in:
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — client-side counterpart (`pk_test_...`).
 - `STRIPE_WEBHOOK_SECRET` — printed by the Stripe CLI when you run `stripe listen` (see "Testing webhooks locally" below).
 - `DATABASE_URL` — Neon connection string. Create a project at <https://console.neon.tech> and copy the pooled connection string.
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — used for rate-limiting `/api/checkout`. See "Rate limiting" below. Optional in dev, required in prod.
 - `NEXT_PUBLIC_SITE_URL` — `http://localhost:3000` in dev, your real domain in prod. Used for Stripe success/cancel redirects.
 
 ## Database (Neon + Drizzle)
@@ -95,6 +96,29 @@ Successful events appear in your `orders` table (use `npm run db:studio` to see 
 3. Subscribe to `checkout.session.completed` and `charge.refunded` at minimum.
 4. Copy the signing secret to your production env (`STRIPE_WEBHOOK_SECRET`).
 
+## Rate limiting
+
+`/api/checkout` is protected with a per-IP sliding-window limit of **10 requests per minute** (configurable in `src/lib/ratelimit.ts`). Without it, anyone can spam Stripe session creation against your account.
+
+Backed by [Upstash Redis](https://console.upstash.com) — free tier (10K commands/day) is plenty for early traffic.
+
+### Setup
+
+1. Sign up at <https://console.upstash.com> (Google/GitHub login, instant)
+2. Create a Redis database — name it `carbon-storefront-ratelimit`, pick the region closest to your Vercel deployment (e.g. `us-east-1`)
+3. From the database page, copy the **REST URL** and **REST Token**
+4. Paste into `.env.local` as `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
+5. Restart `npm run dev`
+
+### Dev vs prod behavior
+
+- **Dev** without Upstash env vars: rate limiting is disabled, one-time warning in console. Checkout still works.
+- **Production** without Upstash env vars: `/api/checkout` returns `503 Service temporarily unavailable`. Fail closed — better to break checkout briefly than silently allow abuse.
+
+### Testing the limit
+
+In dev with Upstash configured, send 11+ POSTs to `/api/checkout` in under a minute. The 11th returns `429 Too many requests` with `X-RateLimit-*` headers showing the policy.
+
 ## What's built
 
 - `/` — full homepage (announcement bar, hero, vehicle grid, featured products, features strip, newsletter, footer)
@@ -102,7 +126,7 @@ Successful events appear in your `orders` table (use `npm run db:studio` to see 
 - `/products/[slug]` — detail page
 - `/cart` — placeholder
 - `/checkout/success` — post-payment landing
-- `POST /api/checkout` — creates a Stripe Checkout Session from `{ items: [{ slug, quantity }] }`, embeds the cart in session metadata
+- `POST /api/checkout` — creates a Stripe Checkout Session from `{ items: [{ slug, quantity }] }`, embeds the cart in session metadata, **rate-limited 10 req/min per IP**
 - `POST /api/webhooks/stripe` — signature-verified webhook handler with idempotency
 
 ## What's NOT built yet
@@ -114,7 +138,6 @@ Successful events appear in your `orders` table (use `npm run db:studio` to see 
 - Auth / account pages
 - Order history lookup by session ID
 - Admin UI for adding/editing products
-- Rate limiting on `/api/checkout`
 - CSP / security headers via middleware
 - AI catalog assistant (next planned feature — RAG over products with pgvector)
 

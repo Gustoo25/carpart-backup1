@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getProduct } from "@/lib/products";
+import { getCheckoutRateLimiter, getClientIp } from "@/lib/ratelimit";
 
 interface CheckoutLineItem {
   slug: string;
@@ -27,6 +28,34 @@ function isValidBody(value: unknown): value is CheckoutRequestBody {
 }
 
 export async function POST(request: Request) {
+  // Rate limit first — block abuse before parsing input or calling Stripe.
+  const limiter = getCheckoutRateLimiter();
+  if (limiter) {
+    const ip = getClientIp(request);
+    const result = await limiter.limit(ip);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please slow down." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": String(result.limit),
+            "X-RateLimit-Remaining": String(result.remaining),
+            "X-RateLimit-Reset": String(result.reset)
+          }
+        }
+      );
+    }
+  } else if (process.env.NODE_ENV === "production") {
+    console.error(
+      "[checkout] Rate limiter not configured in production — refusing request"
+    );
+    return NextResponse.json(
+      { error: "Service temporarily unavailable" },
+      { status: 503 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();
