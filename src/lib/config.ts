@@ -13,9 +13,9 @@ export const SITE_CONFIG = {
     tiktok: "https://tiktok.com/@your-handle"
   },
   hero: {
-    eyebrow: "Hand-laid · Autoclave-cured · Vehicle-specific",
-    headline: "Built For The Cars You Love",
-    sub: "Genuine 2x2 twill carbon fiber upgrades, engineered for fit and finished to last.",
+    eyebrow: "Built To Be Seen · Made To Stand Apart · Engineered To Perform",
+    headline: "More Than A Build.\nA Statement.",
+    sub: "Vehicle-specific carbon fiber and performance parts crafted for enthusiasts who expect factory-level fit with aggressive styling.",
     ctaPrimary: { label: "Shop The Collection", href: "/products" },
     ctaSecondary: { label: "Find Your Vehicle", href: "#vehicles" }
   }
