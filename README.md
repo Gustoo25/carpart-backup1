@@ -96,6 +96,37 @@ Successful events appear in your `orders` table (use `npm run db:studio` to see 
 3. Subscribe to `checkout.session.completed` and `charge.refunded` at minimum.
 4. Copy the signing secret to your production env (`STRIPE_WEBHOOK_SECRET`).
 
+## Security headers
+
+Set in `next.config.mjs` via `async headers()`. Applied to every route.
+
+| Header | What it does |
+| --- | --- |
+| `Content-Security-Policy` | Restricts where scripts, styles, fonts, images, and network requests can come from. Allows Stripe, Upstash, Neon; blocks everything else by default. |
+| `X-Frame-Options: DENY` + `frame-ancestors 'none'` | Prevents the site being embedded in iframes (clickjacking defense). |
+| `X-Content-Type-Options: nosniff` | Prevents the browser from guessing MIME types. |
+| `Referrer-Policy: strict-origin-when-cross-origin` | Don't leak full paths to external sites. |
+| `Permissions-Policy` | Deny camera, microphone, geolocation, interest-cohort by default. |
+| `Strict-Transport-Security` (prod only) | Force HTTPS for 1 year, includes subdomains, eligible for preload list. |
+
+### Verify
+
+With `npm run dev` running:
+
+```powershell
+node scripts/test-security-headers.mjs
+```
+
+Prints each header (or flags it missing).
+
+### Known soft spot
+
+`script-src` includes `'unsafe-inline'` because Next.js App Router injects inline `<script>` tags for hydration. To remove it, we'd add per-request nonces via middleware — a v2 upgrade. Until then, the rest of CSP (connect-src, frame-src, form-action, etc.) still blocks scripts from untrusted origins.
+
+### When to retune
+
+Add new domains to `connect-src` whenever you wire up a new external service (analytics, email provider, image CDN). The dev console will log a CSP violation when something gets blocked — that's your signal.
+
 ## Rate limiting
 
 `/api/checkout` is protected with a per-IP sliding-window limit of **10 requests per minute** (configurable in `src/lib/ratelimit.ts`). Without it, anyone can spam Stripe session creation against your account.
