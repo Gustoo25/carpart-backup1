@@ -22,15 +22,15 @@ export function Hero() {
       />
       <div className="container-x relative py-24 sm:py-32 lg:py-40">
         <div className="max-w-3xl">
-          <div className="text-xs font-medium uppercase tracking-widest text-accent">
+          <div className="text-xs font-medium uppercase tracking-widest text-white">
             {eyebrow}
           </div>
-          <h1 className="heading-display mt-4 text-5xl font-black leading-[0.95] text-white sm:text-7xl lg:text-8xl">
+          <h1 className="heading-display mt-4 text-5xl font-black leading-[0.95] text-accent sm:text-7xl lg:text-8xl">
             {headline.split("\n").map((line, i) => (
               <span key={i} className="block">{line}</span>
             ))}
           </h1>
-          <p className="mt-6 max-w-xl text-base text-zinc-300 sm:text-lg">
+          <p className="mt-6 max-w-xl text-base text-white sm:text-lg">
             {sub}
           </p>
           <div className="mt-10 flex flex-wrap gap-4">

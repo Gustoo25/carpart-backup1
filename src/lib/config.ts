@@ -6,7 +6,7 @@ export const SITE_CONFIG = {
   email: "hello@apexcarbon.example",
   phone: "+1 (555) 010-1234",
   address: "Lakeland, FL",
-  announcement: "FREE SHIPPING ON ORDERS OVER $500 — LIMITED TIME",
+  announcement: "🔥 Huge Summer Sale — Shop Now & Save Big! May 5 Through September 15, 2026 — Limited Time Only 🔥",
   social: {
     instagram: "https://instagram.com/your-handle",
     youtube: "https://youtube.com/@your-channel",
