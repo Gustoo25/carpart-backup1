@@ -7,7 +7,13 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-ink-900 text-white antialiased;
+    @apply bg-ink-900 text-white antialiased cursor-default select-none;
+  }
+  a, button {
+    @apply cursor-pointer;
+  }
+  input, textarea {
+    @apply select-text cursor-text;
   }
   ::selection {
     @apply bg-accent text-white;

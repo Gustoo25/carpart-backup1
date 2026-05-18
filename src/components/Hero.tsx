@@ -13,14 +13,14 @@ export function Hero() {
         muted
         playsInline
         aria-hidden
-        className="absolute inset-0 h-full w-full object-fill opacity-40"
+        className="absolute inset-0 h-full w-full object-cover opacity-40"
         src="/video.mp4"
       />
       <div
         aria-hidden
         className="absolute inset-0 bg-carbon-weave bg-carbon-weave opacity-[0.07]"
       />
-      <div className="container-x relative py-24 sm:py-32 lg:py-40">
+      <div className="container-x relative py-20 sm:py-32 lg:py-40">
         <div className="max-w-3xl">
           <div className="text-xs font-black uppercase tracking-widest text-white">
             {eyebrow}
@@ -33,17 +33,17 @@ export function Hero() {
           <p className="mt-6 max-w-xl text-base text-white sm:text-lg">
             {sub}
           </p>
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
             <Link
               href={ctaPrimary.href}
-              className="group inline-flex items-center gap-2 bg-accent px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-accent-hover"
+              className="group inline-flex items-center justify-center gap-2 bg-accent px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-accent-hover sm:justify-start"
             >
               {ctaPrimary.label}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               href={ctaSecondary.href}
-              className="inline-flex items-center gap-2 border border-ink-500 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:border-white"
+              className="inline-flex items-center justify-center gap-2 border border-ink-500 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:border-white sm:justify-start"
             >
               {ctaSecondary.label}
             </Link>

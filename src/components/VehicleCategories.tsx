@@ -73,12 +73,12 @@ export function VehicleCategories() {
                 {/* Shine sweep on hover */}
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
-                {/* Model info slides up on hover */}
-                <div className="absolute bottom-0 left-0 p-6 transition-transform duration-300 group-hover:-translate-y-2">
-                  <div className="heading-display text-4xl font-black text-white transition-colors duration-300 group-hover:text-accent sm:text-5xl">
+                {/* Model info — always visible on mobile, animates on desktop hover */}
+                <div className="absolute bottom-0 left-0 p-4 sm:p-6 sm:transition-transform sm:duration-300 sm:group-hover:-translate-y-2">
+                  <div className="heading-display text-3xl font-black text-white transition-colors duration-300 group-hover:text-accent sm:text-5xl">
                     {m.model}
                   </div>
-                  <div className="mt-2 flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-accent opacity-0 transition-all duration-300 group-hover:opacity-100">
+                  <div className="mt-1 flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-accent sm:mt-2 sm:opacity-0 sm:transition-all sm:duration-300 sm:group-hover:opacity-100">
                     Shop Parts &rarr;
                   </div>
                 </div>

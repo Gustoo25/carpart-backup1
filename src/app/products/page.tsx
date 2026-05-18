@@ -1,5 +1,4 @@
-import { PLACEHOLDER_PRODUCTS } from "@/lib/products";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductsClient } from "@/components/ProductsClient";
 
 export const metadata = { title: "All Products" };
 
@@ -15,15 +14,11 @@ export default function ProductsPage() {
             All Products
           </h1>
           <p className="mt-2 text-sm text-zinc-400">
-            Placeholder listing. Filters, sort, and pagination land in pass two.
+            Filter by vehicle to find parts built for your exact model.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {PLACEHOLDER_PRODUCTS.map((product) => (
-            <ProductCard key={product.slug} product={product} />
-          ))}
-        </div>
+        <ProductsClient />
       </div>
     </section>
   );
