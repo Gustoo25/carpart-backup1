@@ -13,7 +13,23 @@ const STEPS = [
   { num: "06", label: "Side Fabric" },
   { num: "07", label: "Stitching" },
   { num: "08", label: "Airbag" },
-  { num: "09", label: "Review & Order" }
+  { num: "09", label: "Logo" },
+  { num: "10", label: "Review & Order" }
+];
+
+const LOGO_OPTIONS = [
+  {
+    id: "carbon",
+    label: "Carbon Fiber Logo",
+    desc: "Your logo precision-cut and inlaid in carbon fiber for a seamless, factory-plus finish.",
+    price: null
+  },
+  {
+    id: "embroidered",
+    label: "Custom Embroidered",
+    desc: "A fully custom logo embroidered directly into the fabric for a personal, one-of-one touch.",
+    price: "$150.00"
+  }
 ];
 
 const MODELS = ["Q50", "Q60", "G35", "G37"];
@@ -298,11 +314,23 @@ export default function CustomizePage() {
   const [selectedStripe, setSelectedStripe] = useState<string | null>(null);
   const [selectedCfStyle, setSelectedCfStyle] = useState<string | null>(null);
   const [selectedCfColor, setSelectedCfColor] = useState<string | null>(null);
+  const [selectedLogo, setSelectedLogo] = useState<string | null>(null);
+  const [selectedLogoStyle, setSelectedLogoStyle] = useState<string | null>(null);
+  const [selectedLogoColor, setSelectedLogoColor] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoNote, setLogoNote] = useState("");
+  const [logoSubmitted, setLogoSubmitted] = useState(false);
   const [selectedAirbag, setSelectedAirbag] = useState<string | null>(null);
   const [selectedAirbagColor, setSelectedAirbagColor] = useState<string | null>(null);
+  const [selectedAirbagStitch, setSelectedAirbagStitch] = useState<string | null>(null);
+  const [airbagStitchOpen, setAirbagStitchOpen] = useState(false);
+  const [airbagDisclaimerAccepted, setAirbagDisclaimerAccepted] = useState(false);
   const [selectedFabric, setSelectedFabric] = useState<string | null>(null);
   const [selectedFabricColor, setSelectedFabricColor] = useState<string | null>(null);
   const [selectedStitch, setSelectedStitch] = useState<string | null>(null);
+  const [orderComments, setOrderComments] = useState("");
+  const [confirmNonRefundable, setConfirmNonRefundable] = useState(false);
+  const [confirmLeadTime, setConfirmLeadTime] = useState(false);
   const [activeInquiry, setActiveInquiry] = useState<string | null>(null);
   const [inquiryDesc, setInquiryDesc] = useState("");
   const [inquiryFile, setInquiryFile] = useState<File | null>(null);
@@ -330,7 +358,9 @@ export default function CustomizePage() {
   const ledRpmComplete = selectedLedRpm !== null;
   const stripeComplete = selectedStripe !== null;
   const cfStyleComplete = selectedCfStyle !== null && selectedCfColor !== null;
-  const airbagComplete = selectedAirbag !== null && (selectedAirbag === "stock" || selectedAirbagColor !== null);
+  const airbagComplete = selectedAirbag !== null && (selectedAirbag === "stock" || (selectedAirbagColor !== null && selectedAirbagStitch !== null && airbagDisclaimerAccepted));
+  const logoApplies = selectedAirbag === "leather" || selectedAirbag === "alcantara";
+  const logoComplete = !logoApplies || (selectedLogo === "embroidered") || (selectedLogo === "carbon" && selectedLogoStyle !== null && selectedLogoColor !== null);
   const fabricComplete = selectedFabric !== null && selectedFabricColor !== null;
   const stitchComplete = selectedStitch !== null;
 
@@ -347,12 +377,13 @@ export default function CustomizePage() {
     fabricComplete,
     stitchComplete,
     airbagComplete,
+    logoComplete,
     false
   ];
 
   const activeStep = stepStatus.findIndex((done) => !done);
 
-  const allComplete = vehicleComplete && styleComplete && ledRpmComplete && stripeComplete && cfStyleComplete && fabricComplete && stitchComplete && airbagComplete;
+  const allComplete = vehicleComplete && styleComplete && ledRpmComplete && stripeComplete && cfStyleComplete && fabricComplete && stitchComplete && logoComplete && airbagComplete && confirmNonRefundable && confirmLeadTime;
 
   return (
     <div className="min-h-screen">
@@ -761,14 +792,14 @@ export default function CustomizePage() {
 
             {/* Step 08 — Airbag */}
             <div className={`border border-ink-600 bg-ink-800 transition-opacity duration-300 ${vehicleComplete ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
-              <StepHeader num="08" label="Airbag Options" unlocked={vehicleComplete} summary={selectedAirbag ? AIRBAG_OPTIONS.find(a => a.id === selectedAirbag)?.label ?? null : null} />
+              <StepHeader num="09" label="Airbag Options" unlocked={vehicleComplete} summary={selectedAirbag ? AIRBAG_OPTIONS.find(a => a.id === selectedAirbag)?.label ?? null : null} />
               <div className="p-6 space-y-5">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {AIRBAG_OPTIONS.map((opt) => (
                     <button
                       key={opt.id}
                       type="button"
-                      onClick={() => { setSelectedAirbag(opt.id); setSelectedAirbagColor(null); }}
+                      onClick={() => { setSelectedAirbag(opt.id); setSelectedAirbagColor(null); setSelectedAirbagStitch(null); setAirbagStitchOpen(false); setSelectedLogo(null); setLogoSubmitted(false); setAirbagDisclaimerAccepted(false); }}
                       className={`group border text-left transition-all duration-200 ${
                         selectedAirbag === opt.id ? "border-accent bg-accent/10" : "border-ink-500 bg-ink-700 hover:border-accent hover:bg-ink-600"
                       }`}
@@ -835,16 +866,336 @@ export default function CustomizePage() {
                         </button>
                       ))}
                     </div>
+
+                    {/* Stitching dropdown */}
+                    <div className="mt-5 border-t border-ink-700 pt-5">
+                      <button
+                        type="button"
+                        onClick={() => setAirbagStitchOpen(!airbagStitchOpen)}
+                        className={`group flex w-full items-center justify-between border px-4 py-3 transition-all duration-200 ${
+                          airbagStitchOpen ? "border-accent bg-accent/10" : "border-ink-600 bg-ink-800 hover:border-accent/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Cover Stitching</span>
+                          {selectedAirbagStitch && (
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-4 w-4 rounded-full border border-white/20"
+                                style={{ backgroundColor: STITCH_COLORS.find(c => c.id === selectedAirbagStitch)?.hex }}
+                              />
+                              <span className="text-xs font-bold text-accent">
+                                {STITCH_COLORS.find(c => c.id === selectedAirbagStitch)?.label}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className={`flex h-5 w-5 items-center justify-center border transition-all duration-200 ${airbagStitchOpen ? "border-accent bg-accent rotate-45" : "border-ink-500 group-hover:border-accent"}`}>
+                          <span className={`text-xs font-black leading-none ${airbagStitchOpen ? "text-white" : "text-zinc-400"}`}>+</span>
+                        </div>
+                      </button>
+
+                      {airbagStitchOpen && (
+                        <div className="border border-t-0 border-ink-600 bg-ink-950 p-4">
+                          <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Select stitch color</p>
+                          <div className="flex flex-wrap gap-3">
+                            {STITCH_COLORS.map((color) => (
+                              <button
+                                key={color.id}
+                                type="button"
+                                onClick={() => { setSelectedAirbagStitch(color.id); setAirbagStitchOpen(false); }}
+                                className="group flex flex-col items-center gap-2"
+                              >
+                                <div
+                                  className={`relative h-9 w-9 rounded-full border-2 transition-all duration-200 ${
+                                    selectedAirbagStitch === color.id
+                                      ? "border-accent scale-110 shadow-[0_0_12px_rgba(220,38,38,0.5)]"
+                                      : "border-ink-500 hover:border-accent hover:scale-105"
+                                  }`}
+                                  style={{ backgroundColor: color.hex }}
+                                >
+                                  {selectedAirbagStitch === color.id && (
+                                    <div className="absolute inset-0 flex items-center justify-center rounded-full">
+                                      <Check className="h-3 w-3 text-white drop-shadow" />
+                                    </div>
+                                  )}
+                                </div>
+                                <span className={`text-[10px] font-semibold transition-colors ${selectedAirbagStitch === color.id ? "text-accent" : "text-zinc-500"}`}>
+                                  {color.label}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Disclaimer — only for custom airbag options */}
+                {selectedAirbag && selectedAirbag !== "stock" && (
+                  <div className={`border p-5 transition-colors duration-200 ${airbagDisclaimerAccepted ? "border-accent/40 bg-accent/5" : "border-zinc-700 bg-ink-900"}`}>
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Airbag Cover Disclaimer</span>
+                      <span className="h-px flex-1 bg-ink-700" />
+                    </div>
+                    <p className="mb-4 text-xs leading-relaxed text-zinc-400">
+                      Airbag cover is sold for <span className="font-bold text-white">car show purposes and/or cosmetic purposes only.</span> The custom airbag cover will fit your vehicle's original airbag, however custom airbag covers are <span className="font-bold text-white">not safety tested.</span> We are not liable for any issues related to airbag cover deployment. This product is sold strictly as a cosmetic item only.
+                    </p>
+                    <label className="group flex cursor-pointer items-start gap-3">
+                      <div className={`relative mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center border-2 transition-all duration-200 ${
+                        airbagDisclaimerAccepted ? "border-accent bg-accent" : "border-ink-500 group-hover:border-accent"
+                      }`}>
+                        {airbagDisclaimerAccepted && <Check className="h-3 w-3 text-white" />}
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={airbagDisclaimerAccepted}
+                          onChange={(e) => setAirbagDisclaimerAccepted(e.target.checked)}
+                        />
+                      </div>
+                      <span className="text-xs leading-relaxed text-zinc-300">
+                        I — the customer — <span className="font-bold text-white">understand & agree</span> to the above disclaimer prior to purchasing.
+                      </span>
+                    </label>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Step 09 — Review */}
+            {/* Step 09 — Logo */}
+            <div className={`border border-ink-600 bg-ink-800 transition-opacity duration-300 ${logoApplies ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
+              <StepHeader num="09" label="Logo Type" unlocked={logoApplies} summary={selectedLogo ? LOGO_OPTIONS.find(l => l.id === selectedLogo)?.label ?? null : null} />
+              <div className="p-6 space-y-5">
+                {!logoApplies && (
+                  <p className="text-xs text-zinc-500">Select a Leather or Alcantara airbag in Step 08 to unlock logo options.</p>
+                )}
+                {logoApplies && (
+                  <>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {LOGO_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => { setSelectedLogo(opt.id); setSelectedLogoStyle(null); setSelectedLogoColor(null); setLogoFile(null); setLogoNote(""); setLogoSubmitted(false); }}
+                          className={`group border text-left transition-all duration-200 ${
+                            selectedLogo === opt.id ? "border-accent bg-accent/10" : "border-ink-500 bg-ink-700 hover:border-accent hover:bg-ink-600"
+                          }`}
+                        >
+                          <div className="relative h-52 border-b border-ink-600 bg-ink-900 flex items-center justify-center overflow-hidden">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">[ Add Photo Here ]</span>
+                            {selectedLogo === opt.id && (
+                              <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center bg-accent">
+                                <Check className="h-3 w-3 text-white" />
+                              </div>
+                            )}
+                            <span className={`absolute bottom-0 left-0 h-0.5 bg-accent transition-all duration-500 ${selectedLogo === opt.id ? "w-full" : "w-0 group-hover:w-full"}`} />
+                          </div>
+                          <div className="flex items-start justify-between p-5">
+                            <div>
+                              <h3 className={`heading-display text-xl font-black transition-colors ${selectedLogo === opt.id ? "text-accent" : "text-white"}`}>
+                                {opt.label}
+                              </h3>
+                              <p className="mt-2 text-xs leading-relaxed text-zinc-500">{opt.desc}</p>
+                            </div>
+                            {opt.price && (
+                              <span className="ml-3 flex-shrink-0 text-sm font-black text-accent">+ {opt.price}</span>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Carbon fiber logo — pattern + color */}
+                    {selectedLogo === "carbon" && (
+                      <div className="border border-ink-600 bg-ink-900 p-5 space-y-6">
+                        {/* Pattern */}
+                        <div>
+                          <div className="mb-3 flex items-center gap-3">
+                            <span className="h-px flex-1 bg-ink-600" />
+                            <span className="text-xs font-black uppercase tracking-widest text-accent">Choose Pattern</span>
+                            <span className="h-px flex-1 bg-ink-600" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            {CF_STYLES.map((cf) => (
+                              <button
+                                key={cf.id}
+                                type="button"
+                                onClick={() => { setSelectedLogoStyle(cf.id); setSelectedLogoColor(null); }}
+                                className={`group border text-left transition-all duration-200 ${
+                                  selectedLogoStyle === cf.id ? "border-accent bg-accent/10" : "border-ink-500 bg-ink-700 hover:border-accent hover:bg-ink-600"
+                                }`}
+                              >
+                                <div className="relative h-36 border-b border-ink-600 bg-ink-800 flex items-center justify-center overflow-hidden">
+                                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">[ Add Photo Here ]</span>
+                                  {selectedLogoStyle === cf.id && (
+                                    <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center bg-accent">
+                                      <Check className="h-3 w-3 text-white" />
+                                    </div>
+                                  )}
+                                  <span className={`absolute bottom-0 left-0 h-0.5 bg-accent transition-all duration-500 ${selectedLogoStyle === cf.id ? "w-full" : "w-0 group-hover:w-full"}`} />
+                                </div>
+                                <div className="p-4">
+                                  <h3 className={`heading-display text-lg font-black transition-colors ${selectedLogoStyle === cf.id ? "text-accent" : "text-white"}`}>
+                                    {cf.label}
+                                  </h3>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Color — appears after pattern chosen */}
+                        {selectedLogoStyle && (
+                          <div>
+                            <div className="mb-3 flex items-center gap-3">
+                              <span className="h-px flex-1 bg-ink-600" />
+                              <span className="text-xs font-black uppercase tracking-widest text-accent">Choose Carbon Color</span>
+                              <span className="h-px flex-1 bg-ink-600" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                              {CF_COLORS.map((color) => (
+                                <button
+                                  key={color.id}
+                                  type="button"
+                                  onClick={() => setSelectedLogoColor(color.id)}
+                                  className={`group relative border p-3 text-left transition-all duration-200 ${
+                                    selectedLogoColor === color.id
+                                      ? "border-accent bg-accent/10"
+                                      : "border-ink-500 bg-ink-700 hover:border-accent hover:bg-ink-600"
+                                  }`}
+                                >
+                                  <div className="mb-3 h-10 w-full rounded-sm border border-white/10" style={{ backgroundColor: color.hex }} />
+                                  <span className={`block whitespace-nowrap text-xs font-semibold transition-colors ${selectedLogoColor === color.id ? "text-accent" : "text-white"}`}>
+                                    {selectedLogoStyle === "forged" ? `with ${color.label} Flakes` : color.label}
+                                  </span>
+                                  {selectedLogoColor === color.id && (
+                                    <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center bg-accent">
+                                      <Check className="h-2.5 w-2.5 text-white" />
+                                    </div>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Embroidered logo upload panel */}
+                    {selectedLogo === "embroidered" && (
+                      <div className="border border-ink-600 bg-ink-900 p-5">
+                        <div className="mb-4 flex items-center gap-3">
+                          <span className="h-px flex-1 bg-ink-600" />
+                          <span className="text-xs font-black uppercase tracking-widest text-accent">Submit Your Logo Design</span>
+                          <span className="h-px flex-1 bg-ink-600" />
+                        </div>
+                        {logoSubmitted ? (
+                          <div className="flex items-center gap-3 border border-accent/30 bg-accent/5 px-4 py-3">
+                            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center bg-accent">
+                              <Check className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-widest text-white">Logo Submitted!</p>
+                              <p className="text-xs text-zinc-500">We'll confirm the design before production.</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <textarea
+                              rows={2}
+                              value={logoNote}
+                              onChange={(e) => setLogoNote(e.target.value)}
+                              placeholder="Describe your logo or any notes for our team..."
+                              className="w-full border border-ink-500 bg-ink-800 px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-accent transition-colors resize-none"
+                            />
+                            <label className={`flex cursor-pointer items-center gap-3 border border-dashed px-4 py-3 transition-colors ${logoFile ? "border-accent bg-accent/5" : "border-ink-600 hover:border-accent"}`}>
+                              <input type="file" accept="image/*,.pdf,.ai,.svg" className="sr-only" onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)} />
+                              <Upload className={`h-4 w-4 flex-shrink-0 ${logoFile ? "text-accent" : "text-zinc-600"}`} />
+                              <div>
+                                <span className="block text-xs text-zinc-400">{logoFile ? logoFile.name : "Upload logo file"}</span>
+                                <span className="text-[10px] text-zinc-600">PNG, JPG, SVG, AI or PDF accepted</span>
+                              </div>
+                            </label>
+                            <button
+                              type="button"
+                              disabled={!logoNote.trim() && !logoFile}
+                              onClick={() => setLogoSubmitted(true)}
+                              className={`group inline-flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${
+                                logoNote.trim() || logoFile ? "bg-accent text-white hover:bg-accent-hover" : "cursor-not-allowed bg-ink-700 text-zinc-600"
+                              }`}
+                            >
+                              Send Logo <Send className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Step 10 — Review & Order */}
             <div className={`border border-ink-600 bg-ink-800 transition-opacity duration-300 ${vehicleComplete ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
-              <StepHeader num="09" label="Review & Order" unlocked={vehicleComplete} />
-              <div className="p-6">
-                <Placeholder label="Order review & checkout — coming soon" height="h-32" />
+              <StepHeader num="10" label="Review & Order" unlocked={vehicleComplete} />
+              <div className="p-6 space-y-6">
+
+                {/* Comments box */}
+                <div>
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Additional Comments</span>
+                    <span className="h-px flex-1 bg-ink-600" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Optional</span>
+                  </div>
+                  <textarea
+                    rows={5}
+                    value={orderComments}
+                    onChange={(e) => setOrderComments(e.target.value)}
+                    placeholder="Any specific requests, questions, or details you'd like us to know about your build..."
+                    className="w-full border border-ink-500 bg-ink-900 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none focus:border-accent transition-colors resize-none"
+                  />
+                  <p className="mt-2 text-[10px] text-zinc-600">
+                    We review every order personally. Use this space for anything not covered above.
+                  </p>
+                </div>
+
+                {/* Required confirmations */}
+                <div className="space-y-3">
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Required Confirmations</span>
+                    <span className="h-px flex-1 bg-ink-600" />
+                  </div>
+
+                  {[
+                    {
+                      id: "nonrefundable",
+                      checked: confirmNonRefundable,
+                      onChange: setConfirmNonRefundable,
+                      text: "I understand this is a custom, made-to-order item and is ",
+                      bold: "non-refundable. All sales are final."
+                    },
+                    {
+                      id: "leadtime",
+                      checked: confirmLeadTime,
+                      onChange: setConfirmLeadTime,
+                      text: "I acknowledge that custom builds require a ",
+                      bold: "production lead time of 4–6 weeks",
+                      after: " and I will be contacted with updates."
+                    }
+                  ].map((item) => (
+                    <label key={item.id} className={`group flex cursor-pointer items-start gap-3 border p-4 transition-all duration-200 ${item.checked ? "border-accent/40 bg-accent/5" : "border-ink-600 bg-ink-900 hover:border-ink-500"}`}>
+                      <div className={`relative mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center border-2 transition-all duration-200 ${item.checked ? "border-accent bg-accent" : "border-ink-500 group-hover:border-accent"}`}>
+                        {item.checked && <Check className="h-3 w-3 text-white" />}
+                        <input type="checkbox" className="sr-only" checked={item.checked} onChange={(e) => item.onChange(e.target.checked)} />
+                      </div>
+                      <span className="text-xs leading-relaxed text-zinc-300">
+                        {item.text}<span className="font-bold text-white">{item.bold}</span>{item.after ?? ""}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
               </div>
             </div>
 
@@ -853,15 +1204,6 @@ export default function CustomizePage() {
           {/* Sidebar */}
           <div className="space-y-6">
             <div className="sticky top-24 space-y-6">
-
-              <div className="border border-ink-600 bg-ink-800">
-                <div className="border-b border-ink-600 px-5 py-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-white">Live Preview</span>
-                </div>
-                <div className="p-5">
-                  <Placeholder label="Wheel preview" height="h-56" />
-                </div>
-              </div>
 
               <div className="border border-ink-600 bg-ink-800">
                 <div className="border-b border-ink-600 px-5 py-3">
@@ -877,7 +1219,11 @@ export default function CustomizePage() {
                     { label: "CF Color", value: selectedCfColor ? CF_COLORS.find(c => c.id === selectedCfColor)?.label ?? null : null },
                     { label: "Side Fabric", value: selectedFabric && selectedFabricColor ? `${SIDE_FABRICS.find(f => f.id === selectedFabric)?.label} · ${FABRIC_COLORS[selectedFabric]?.find(c => c.id === selectedFabricColor)?.label}` : null },
                     { label: "Stitching", value: selectedStitch ? STITCH_COLORS.find(c => c.id === selectedStitch)?.label ?? null : null },
-                    { label: "Airbag", value: selectedAirbag ? AIRBAG_OPTIONS.find(a => a.id === selectedAirbag)?.label ?? null : null }
+                    { label: "Logo", value: selectedLogo ? LOGO_OPTIONS.find(l => l.id === selectedLogo)?.label ?? null : null },
+                    { label: "Logo Style", value: selectedLogoStyle ? CF_STYLES.find(s => s.id === selectedLogoStyle)?.label ?? null : null },
+                    { label: "Logo Color", value: selectedLogoColor ? CF_COLORS.find(c => c.id === selectedLogoColor)?.label ?? null : null },
+                    { label: "Airbag", value: selectedAirbag ? AIRBAG_OPTIONS.find(a => a.id === selectedAirbag)?.label ?? null : null },
+                    { label: "Airbag Stitch", value: selectedAirbagStitch ? STITCH_COLORS.find(c => c.id === selectedAirbagStitch)?.label ?? null : null }
                   ].map((item) => (
                     <div key={item.label} className="flex items-center justify-between border-b border-ink-700 pb-3 last:border-0">
                       <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">{item.label}</span>
@@ -891,7 +1237,7 @@ export default function CustomizePage() {
                     <span className="text-sm font-black uppercase tracking-widest text-white">Est. Total</span>
                     <span className="heading-display text-2xl font-black text-accent">
                       {selectedStyle
-                        ? `$${(410 + (selectedLedRpm === "Add Led RPM" ? 150 : 0) + (selectedCfStyle === "forged" ? 50 : 0) + (selectedAirbag === "leather" || selectedAirbag === "alcantara" ? 75 : 0)).toFixed(2)}`
+                        ? `$${(410 + (selectedLedRpm === "Add Led RPM" ? 150 : 0) + (selectedCfStyle === "forged" ? 50 : 0) + (selectedAirbag === "leather" || selectedAirbag === "alcantara" ? 75 : 0) + (selectedLogo === "embroidered" ? 150 : 0)).toFixed(2)}`
                         : "$—.—"}
                     </span>
                   </div>
