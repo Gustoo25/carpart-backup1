@@ -96,6 +96,30 @@ Successful events appear in your `orders` table (use `npm run db:studio` to see 
 3. Subscribe to `checkout.session.completed` and `charge.refunded` at minimum.
 4. Copy the signing secret to your production env (`STRIPE_WEBHOOK_SECRET`).
 
+## Error tracking (Sentry)
+
+Server, edge, and client runtimes are wired up via `instrumentation.ts` + `sentry.{client,server,edge}.config.ts`. `next.config.mjs` is wrapped with `withSentryConfig` for source map upload at build time.
+
+**Without any Sentry env vars set, all of this is a complete no-op** — safe to leave blank in dev or until you sign up.
+
+### Setup
+
+1. Sign up at <https://sentry.io> (free tier: 5K errors/month)
+2. Create a project → pick **Next.js** as the platform
+3. From the project's Client Keys page, copy the DSN
+4. Paste it into `.env.local` as both `SENTRY_DSN` and `NEXT_PUBLIC_SENTRY_DSN` (same value — the client SDK needs the `NEXT_PUBLIC_` prefix to be exposed to browser bundles)
+5. Restart `npm run dev`
+
+### Source map upload (production builds)
+
+For Sentry to show readable stack traces from minified prod code, also set:
+
+- `SENTRY_ORG` — your org slug (visible in the dashboard URL)
+- `SENTRY_PROJECT` — your project slug
+- `SENTRY_AUTH_TOKEN` — generate at <https://sentry.io/settings/account/api/auth-tokens/> with `project:releases` scope
+
+These only matter at build time. Local dev doesn't need them.
+
 ## Security headers
 
 Set in `next.config.mjs` via `async headers()`. Applied to every route.
@@ -119,9 +143,11 @@ node scripts/test-security-headers.mjs
 
 Prints each header (or flags it missing).
 
-### Known soft spot
+### CSP nonces
 
-`script-src` includes `'unsafe-inline'` because Next.js App Router injects inline `<script>` tags for hydration. To remove it, we'd add per-request nonces via middleware — a v2 upgrade. Until then, the rest of CSP (connect-src, frame-src, form-action, etc.) still blocks scripts from untrusted origins.
+`middleware.ts` generates a fresh base64 nonce per request and sets `script-src 'self' 'nonce-<value>' 'strict-dynamic'` — Next.js auto-applies the nonce to its hydration scripts. This means `'unsafe-inline'` is **no longer in script-src**, closing the inline-script XSS surface.
+
+`style-src` still allows `'unsafe-inline'` because Next.js + `next/font` inject inline `<style>` tags. Style-based attacks are much narrower (no JS execution), but a future pass could move to style nonces too.
 
 ### When to retune
 

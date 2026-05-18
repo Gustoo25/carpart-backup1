@@ -1,48 +1,11 @@
+import { withSentryConfig } from "@sentry/nextjs";
+
 const isProd = process.env.NODE_ENV === "production";
 
-// CSP directives. Tighter in production.
-//
-// 'unsafe-inline' is required in script-src because Next.js App Router
-// injects inline <script> tags for hydration. The upgrade path is
-// per-request nonces generated in middleware — solid v2 work but more
-// involved. Until then, the rest of CSP still blocks scripts from
-// untrusted origins.
-const cspDirectives = {
-  "default-src": ["'self'"],
-  "script-src": [
-    "'self'",
-    "'unsafe-inline'",
-    ...(isProd ? [] : ["'unsafe-eval'"]),
-    "https://js.stripe.com"
-  ],
-  "style-src": ["'self'", "'unsafe-inline'"],
-  "font-src": ["'self'", "data:"],
-  "img-src": ["'self'", "data:", "blob:", "https:"],
-  "connect-src": [
-    "'self'",
-    "https://api.stripe.com",
-    "https://*.upstash.io",
-    "https://*.neon.tech",
-    "wss://*.neon.tech",
-    ...(isProd ? [] : ["ws://localhost:*", "http://localhost:*"])
-  ],
-  "frame-src": ["https://js.stripe.com", "https://checkout.stripe.com"],
-  "form-action": ["'self'", "https://checkout.stripe.com"],
-  "base-uri": ["'self'"],
-  "object-src": ["'none'"],
-  "frame-ancestors": ["'none'"]
-};
-
-if (isProd) cspDirectives["upgrade-insecure-requests"] = [];
-
-const csp = Object.entries(cspDirectives)
-  .map(([directive, sources]) =>
-    sources.length === 0 ? directive : `${directive} ${sources.join(" ")}`
-  )
-  .join("; ");
-
+// CSP is set per-request in middleware.ts (with a fresh nonce) so we can
+// drop 'unsafe-inline' from script-src. The headers below are static and
+// apply to every route regardless of method.
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -73,4 +36,23 @@ const nextConfig = {
   }
 };
 
-export default nextConfig;
+// withSentryConfig is silent without SENTRY_AUTH_TOKEN. When Adrian wires
+// up his Sentry org/project/auth token, source maps get uploaded on build.
+// Until then, this is a no-op wrapper and the runtime SDK is also no-op
+// (no NEXT_PUBLIC_SENTRY_DSN configured).
+export default withSentryConfig(nextConfig, {
+  silent: !process.env.CI,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  widenClientFileUpload: true,
+  reactComponentAnnotation: { enabled: true },
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: true,
+  sourcemaps: {
+    // Delete source maps after upload so we never serve them publicly.
+    // When no SENTRY_AUTH_TOKEN is set, nothing uploads but maps are
+    // still deleted from the build output.
+    deleteSourcemapsAfterUpload: true
+  }
+});

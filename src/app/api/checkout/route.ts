@@ -3,28 +3,87 @@ import { getStripe } from "@/lib/stripe";
 import { getProduct } from "@/lib/products";
 import { getCheckoutRateLimiter, getClientIp } from "@/lib/ratelimit";
 
-interface CheckoutLineItem {
+const MAX_ITEMS_IN_CART = 20;
+const MAX_QUANTITY_PER_ITEM = 99;
+const SLUG_PATTERN = /^[a-z0-9-]+$/;
+
+const isProd = process.env.NODE_ENV === "production";
+
+interface CartItem {
   slug: string;
   quantity: number;
 }
 
-interface CheckoutRequestBody {
-  items: CheckoutLineItem[];
+type ValidationResult =
+  | { ok: true; items: CartItem[] }
+  | { ok: false; status: number; error: string };
+
+function validate(value: unknown): ValidationResult {
+  if (!value || typeof value !== "object") {
+    return { ok: false, status: 400, error: "Body must be a JSON object" };
+  }
+  const body = value as { items?: unknown };
+  if (!Array.isArray(body.items)) {
+    return { ok: false, status: 400, error: "items must be an array" };
+  }
+  if (body.items.length === 0) {
+    return { ok: false, status: 400, error: "Cart is empty" };
+  }
+  if (body.items.length > MAX_ITEMS_IN_CART) {
+    return {
+      ok: false,
+      status: 422,
+      error: `Too many items (max ${MAX_ITEMS_IN_CART})`
+    };
+  }
+
+  const items: CartItem[] = [];
+  for (const [index, raw] of body.items.entries()) {
+    if (!raw || typeof raw !== "object") {
+      return {
+        ok: false,
+        status: 400,
+        error: `items[${index}] must be an object`
+      };
+    }
+    const item = raw as { slug?: unknown; quantity?: unknown };
+
+    if (typeof item.slug !== "string" || !SLUG_PATTERN.test(item.slug)) {
+      return {
+        ok: false,
+        status: 400,
+        error: `items[${index}].slug must be lowercase letters, digits, and hyphens`
+      };
+    }
+    if (
+      typeof item.quantity !== "number" ||
+      !Number.isInteger(item.quantity) ||
+      item.quantity < 1 ||
+      item.quantity > MAX_QUANTITY_PER_ITEM
+    ) {
+      return {
+        ok: false,
+        status: 422,
+        error: `items[${index}].quantity must be an integer between 1 and ${MAX_QUANTITY_PER_ITEM}`
+      };
+    }
+    if (!getProduct(item.slug)) {
+      return {
+        ok: false,
+        status: 404,
+        error: `Unknown product: ${item.slug}`
+      };
+    }
+    items.push({ slug: item.slug, quantity: item.quantity });
+  }
+  return { ok: true, items };
 }
 
-function isValidBody(value: unknown): value is CheckoutRequestBody {
-  if (!value || typeof value !== "object") return false;
-  const maybe = value as { items?: unknown };
-  if (!Array.isArray(maybe.items) || maybe.items.length === 0) return false;
-  return maybe.items.every((item) => {
-    if (!item || typeof item !== "object") return false;
-    const line = item as { slug?: unknown; quantity?: unknown };
-    return (
-      typeof line.slug === "string" &&
-      typeof line.quantity === "number" &&
-      line.quantity > 0
-    );
-  });
+// Production hides internal error details from clients; logs keep the full
+// context for Sentry / Vercel logs. Dev returns the raw message for debugging.
+function publicErrorMessage(err: unknown, fallback: string): string {
+  if (isProd) return fallback;
+  return err instanceof Error ? err.message : fallback;
 }
 
 export async function POST(request: Request) {
@@ -46,7 +105,7 @@ export async function POST(request: Request) {
         }
       );
     }
-  } else if (process.env.NODE_ENV === "production") {
+  } else if (isProd) {
     console.error(
       "[checkout] Rate limiter not configured in production — refusing request"
     );
@@ -63,18 +122,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (!isValidBody(body)) {
+  const validation = validate(body);
+  if (!validation.ok) {
     return NextResponse.json(
-      { error: "Body must be { items: [{ slug, quantity }] }" },
-      { status: 400 }
+      { error: validation.error },
+      { status: validation.status }
     );
   }
 
-  const lineItems = body.items.map((item) => {
-    const product = getProduct(item.slug);
-    if (!product) {
-      throw new Response(`Unknown product: ${item.slug}`, { status: 400 });
-    }
+  const lineItems = validation.items.map((item) => {
+    // validate() guarantees the product exists.
+    const product = getProduct(item.slug)!;
     return {
       quantity: item.quantity,
       price_data: {
@@ -98,16 +156,22 @@ export async function POST(request: Request) {
       cancel_url: `${siteUrl}/cart`,
       shipping_address_collection: { allowed_countries: ["US", "CA"] },
       // Webhook handler reads this back to persist line items by slug.
-      // Stripe metadata caps values at 500 chars — fine for ~10 items.
-      // If carts ever get larger, store the cart in the DB and put its
-      // ID here instead.
-      metadata: { cart: JSON.stringify(body.items) }
+      // Stripe metadata caps values at 500 chars — MAX_ITEMS_IN_CART keeps
+      // us safely under that.
+      metadata: { cart: JSON.stringify(validation.items) }
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Stripe session failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (err) {
+    console.error("[checkout] Stripe session creation failed", err);
+    return NextResponse.json(
+      {
+        error: publicErrorMessage(
+          err,
+          "Could not start checkout. Please try again."
+        )
+      },
+      { status: 500 }
+    );
   }
 }
