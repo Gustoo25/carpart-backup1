@@ -11,11 +11,16 @@ const NAV_LINKS = [
   { label: "Shop", href: "/products" },
   { label: "Vehicles", href: "/#vehicles" },
   { label: "Carbon Fiber Wheels", href: "/products?category=wheels" },
+  { label: "Performance Parts", href: "/products?category=performance" },
   { label: "Popular Products", href: "/products?filter=popular" },
   { label: "Sale", href: "/products?filter=sale" },
   { label: "About", href: "/#about" },
   { label: "Contact", href: "/#contact" }
 ];
+
+const DESKTOP_NAV_LINKS = NAV_LINKS.filter(
+  (l) => l.label !== "Vehicles" && l.label !== "Sale"
+);
 
 export function Header() {
   const pathname = usePathname();
@@ -40,7 +45,7 @@ export function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-4 xl:flex xl:gap-5">
-            {NAV_LINKS.map((link) => (
+            {DESKTOP_NAV_LINKS.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}

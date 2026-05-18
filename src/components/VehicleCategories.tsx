@@ -105,45 +105,74 @@ export function VehicleCategories() {
 
       {/* Year picker modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setSelected(null)}
           />
 
           {/* Modal */}
-          <div className="relative w-full max-w-sm border border-ink-500 bg-ink-900 p-8 shadow-2xl">
-            <button
-              onClick={() => setSelected(null)}
-              aria-label="Close"
-              className="absolute right-4 top-4 text-zinc-400 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <div className="relative w-full overflow-hidden border-t border-ink-500 bg-ink-950 shadow-2xl sm:max-w-md sm:border sm:border-ink-500">
 
-            <div className="text-xs font-black uppercase tracking-widest text-accent">
-              Infiniti {selected.model}
+            {/* Car image header */}
+            <div className="relative h-40 sm:h-52">
+              <Image
+                src={selected.image}
+                alt={`Infiniti ${selected.model}`}
+                fill
+                className="object-cover opacity-60"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-black/40 to-transparent" />
+
+              {/* Red accent bar top */}
+              <span className="absolute left-0 top-0 h-1 w-full bg-accent" />
+
+              {/* Close button */}
+              <button
+                onClick={() => setSelected(null)}
+                aria-label="Close"
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center border border-white/20 bg-black/50 text-white backdrop-blur-sm hover:border-accent hover:text-accent transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              {/* Model name overlay */}
+              <div className="absolute bottom-4 left-6">
+                <div className="text-[10px] font-black uppercase tracking-widest text-accent">
+                  Infiniti · Select Year
+                </div>
+                <div className="heading-display text-4xl font-black text-white sm:text-5xl">
+                  {selected.model}
+                </div>
+              </div>
             </div>
-            <h3 className="heading-display mt-2 text-2xl font-black text-white">
-              Select Your Year
-            </h3>
 
-            <div className="mt-6 flex flex-col gap-3">
+            {/* Year options */}
+            <div className="flex flex-col gap-px bg-ink-700 p-0">
               {selected.years.map((y) => (
                 <Link
                   key={y.value}
                   href={`/products?model=${selected.slug}&years=${y.value}`}
                   onClick={() => setSelected(null)}
-                  className="group flex items-center justify-between border border-ink-500 bg-ink-800 px-5 py-4 transition-all hover:border-accent hover:bg-ink-700"
+                  className="group flex items-center justify-between bg-ink-950 px-6 py-5 transition-all duration-200 hover:bg-ink-800"
                 >
-                  <span className="heading-display text-xl font-black text-white group-hover:text-accent">
-                    {y.label}
-                  </span>
-                  <ChevronRight className="h-5 w-5 text-zinc-500 group-hover:text-accent" />
+                  <div className="flex items-center gap-4">
+                    <span className="h-8 w-1 bg-ink-600 transition-colors duration-200 group-hover:bg-accent" />
+                    <span className="heading-display text-2xl font-black text-white transition-colors duration-200 group-hover:text-accent sm:text-3xl">
+                      {y.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 transition-colors duration-200 group-hover:text-accent">
+                    Shop Parts
+                    <ChevronRight className="h-4 w-4" />
+                  </div>
                 </Link>
               ))}
             </div>
+
+            {/* Bottom safe area */}
+            <div className="h-2 bg-ink-950 sm:hidden" />
           </div>
         </div>
       )}

@@ -35,8 +35,8 @@ const config: Config = {
         widest: "0.2em"
       },
       animation: {
-        marquee: "marquee 35s linear infinite",
-        "marquee-reverse": "marquee-reverse 35s linear infinite"
+        marquee: "marquee 8s linear infinite",
+        "marquee-reverse": "marquee-reverse 8s linear infinite"
       },
       keyframes: {
         marquee: {
