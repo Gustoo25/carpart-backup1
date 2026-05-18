@@ -21,11 +21,32 @@ export const SITE_CONFIG = {
   }
 } as const;
 
-export const VEHICLE_BRANDS = [
-  "BMW",
-  "Honda",
-  "Infiniti",
-  "Nissan",
-  "Subaru",
-  "Toyota"
-] as const;
+export const INFINITI_MODELS = [
+  {
+    model: "Q50",
+    slug: "q50",
+    image: "/models/q50.jpg",
+    years: [
+      { label: "2014–2017", value: "2014-2017" },
+      { label: "2018+", value: "2018-plus" },
+    ],
+  },
+  {
+    model: "Q60",
+    slug: "q60",
+    image: "/models/q60.jpg",
+    years: [{ label: "2017–2024", value: "2017-2024" }],
+  },
+  {
+    model: "G35",
+    slug: "g35",
+    image: "/models/g35.jpg",
+    years: [{ label: "2003–2007", value: "2003-2007" }],
+  },
+  {
+    model: "G37",
+    slug: "g37",
+    image: "/models/g37.jpg",
+    years: [{ label: "2008–2013", value: "2008-2013" }],
+  },
+];

@@ -22,7 +22,7 @@ export function Hero() {
       />
       <div className="container-x relative py-24 sm:py-32 lg:py-40">
         <div className="max-w-3xl">
-          <div className="text-xs font-medium uppercase tracking-widest text-white">
+          <div className="text-xs font-black uppercase tracking-widest text-white">
             {eyebrow}
           </div>
           <h1 className="heading-display mt-4 text-5xl font-black leading-[0.95] text-accent sm:text-7xl lg:text-8xl">
