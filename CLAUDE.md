@@ -8,12 +8,11 @@ Each developer works on their own branch. `main` is the integration branch.
 
 - **Adrian** → `Adrian-Branch` (backend: API routes, DB schema, webhooks, auth, ML, security)
 - **Gus** → `gus` (frontend: cart UI, checkout flow, product pages, design polish)
-- **`main`** — only updated by merging a reviewed feature branch in. Don't push to it directly.
+- **`main`** — the integration branch. Only Adrian decides when work lands here.
 
 **Agent rules:**
-- Adrian's agent: default commits/pushes to `Adrian-Branch`. Never touch `gus`.
-- Gus's agent: default commits/pushes to `gus`. Never touch `Adrian-Branch`.
-- Neither agent pushes to `main` without explicit user ask (typically only when merging finished work).
+- Adrian's agent: default commits/pushes to `Adrian-Branch`. Never touch `gus`. **Never push to `main` without Adrian's explicit per-push instruction** — finishing a piece of work on `Adrian-Branch` is NOT license to also promote it to `main`.
+- Gus's agent: default commits/pushes to `gus`. Never touch `Adrian-Branch` or `main`.
 
 Standard safety: show the diff before committing, never force-push, never commit without an explicit user ask.
 
