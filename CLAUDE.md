@@ -7,12 +7,12 @@ Next.js 15 storefront for carbon fiber car parts. Stripe Checkout, Neon Postgres
 Each developer works on their own branch. `main` is the integration branch.
 
 - **Adrian** → `Adrian-Branch` (backend: API routes, DB schema, webhooks, auth, ML, security)
-- **Gus** → `Gus-Branch` (frontend: cart UI, checkout flow, product pages, design polish)
+- **Gus** → `gus` (frontend: cart UI, checkout flow, product pages, design polish)
 - **`main`** — only updated by merging a reviewed feature branch in. Don't push to it directly.
 
 **Agent rules:**
-- Adrian's agent: default commits/pushes to `Adrian-Branch`. Never touch `Gus-Branch`.
-- Gus's agent: default commits/pushes to `Gus-Branch`. Never touch `Adrian-Branch`.
+- Adrian's agent: default commits/pushes to `Adrian-Branch`. Never touch `gus`.
+- Gus's agent: default commits/pushes to `gus`. Never touch `Adrian-Branch`.
 - Neither agent pushes to `main` without explicit user ask (typically only when merging finished work).
 
 Standard safety: show the diff before committing, never force-push, never commit without an explicit user ask.
