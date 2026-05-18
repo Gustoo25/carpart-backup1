@@ -7,7 +7,18 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-ink-900 text-white antialiased;
+    @apply text-white antialiased cursor-default select-none;
+    background-color: #111111;
+  }
+  a, button {
+    @apply cursor-pointer;
+  }
+  section, footer, main {
+    background-color: rgba(10, 10, 10, 0.65) !important;
+    background-image: none !important;
+  }
+  input, textarea {
+    @apply select-text cursor-text;
   }
   ::selection {
     @apply bg-accent text-white;
@@ -20,5 +31,20 @@
   }
   .heading-display {
     @apply font-display uppercase tracking-wider;
+  }
+  .speed-lines {
+    background-image: repeating-linear-gradient(
+      70deg,
+      transparent,
+      transparent 18px,
+      rgba(220, 38, 38, 0.07) 18px,
+      rgba(220, 38, 38, 0.07) 19px
+    );
+  }
+  .skew-badge {
+    @apply inline-block -skew-x-6 bg-accent px-3 py-0.5;
+  }
+  .skew-badge span {
+    @apply block skew-x-6 text-xs font-black uppercase tracking-widest text-white;
   }
 }

@@ -86,6 +86,61 @@ export const PLACEHOLDER_PRODUCTS: Product[] = [
     status: "in-stock",
     imageGradient: "from-stone-800 via-zinc-900 to-neutral-950",
     description: "Full dash + door trim replacement set."
+  },
+  {
+    slug: "cold-air-intake-q50",
+    name: "Cold Air Intake",
+    brand: "Infiniti",
+    fitment: "Q50 · 3.0T",
+    priceCents: 38900,
+    compareAtCents: 52900,
+    status: "in-stock",
+    imageGradient: "from-red-950 via-zinc-900 to-black",
+    description: "High-flow intake with heat shield, bolt-on fitment."
+  },
+  {
+    slug: "cat-back-exhaust-q60",
+    name: "Cat-Back Exhaust",
+    brand: "Infiniti",
+    fitment: "Q60 · 3.0T",
+    priceCents: 129900,
+    compareAtCents: 159900,
+    status: "in-stock",
+    imageGradient: "from-zinc-700 via-stone-900 to-black",
+    description: "Stainless steel cat-back with carbon fiber tips."
+  },
+  {
+    slug: "coilover-kit-g37",
+    name: "Coilover Kit",
+    brand: "Infiniti",
+    fitment: "G37 · 2008–2013",
+    priceCents: 89900,
+    compareAtCents: 119900,
+    status: "in-stock",
+    imageGradient: "from-neutral-700 via-zinc-900 to-black",
+    description: "32-way adjustable damping, dropped stance."
+  },
+  {
+    slug: "strut-bar-g35",
+    name: "Front Strut Bar",
+    brand: "Infiniti",
+    fitment: "G35 · 2003–2007",
+    priceCents: 24900,
+    compareAtCents: 34900,
+    status: "in-stock",
+    imageGradient: "from-zinc-800 via-neutral-900 to-black",
+    description: "Billet aluminum tower brace, reduces flex."
+  },
+  {
+    slug: "intercooler-q50-red-sport",
+    name: "Front Mount Intercooler",
+    brand: "Infiniti",
+    fitment: "Q50 Red Sport · 400HP",
+    priceCents: 74900,
+    compareAtCents: 99900,
+    status: "pre-order",
+    imageGradient: "from-red-900 via-zinc-900 to-black",
+    description: "Drop-in FMIC upgrade, 30% more cooling capacity."
   }
 ];
 

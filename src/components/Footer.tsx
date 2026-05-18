@@ -35,8 +35,8 @@ export function Footer() {
   return (
     <footer className="border-t border-ink-600 bg-ink-950 text-zinc-400">
       <div className="container-x py-16">
-        <div className="grid gap-12 lg:grid-cols-5">
-          <div className="lg:col-span-2">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="sm:col-span-2 lg:col-span-2">
             <div className="heading-display text-2xl text-white">
               {SITE_CONFIG.brandName}
             </div>
