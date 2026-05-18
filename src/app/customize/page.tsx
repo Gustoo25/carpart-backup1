@@ -100,11 +100,33 @@ const STITCH_COLORS = [
   { id: "silver", label: "Silver", hex: "#9ca3af" }
 ];
 
+const AIRBAG_COLORS: Record<string, { id: string; label: string; hex: string }[]> = {
+  leather: [
+    { id: "black", label: "Black", hex: "#1a1a1a" },
+    { id: "gray", label: "Gray", hex: "#6b7280" },
+    { id: "red", label: "Red", hex: "#dc2626" },
+    { id: "orange", label: "Orange", hex: "#ea580c" },
+    { id: "yellow", label: "Yellow", hex: "#eab308" },
+    { id: "blue", label: "Blue", hex: "#2563eb" },
+    { id: "purple", label: "Purple", hex: "#7c3aed" },
+    { id: "cream", label: "Cream", hex: "#f5f0e8" },
+    { id: "white", label: "White", hex: "#e5e5e5" }
+  ],
+  alcantara: [
+    { id: "black", label: "Black", hex: "#1a1a1a" },
+    { id: "white", label: "White", hex: "#e5e5e5" },
+    { id: "yellow", label: "Yellow", hex: "#eab308" },
+    { id: "blue", label: "Blue", hex: "#2563eb" },
+    { id: "orange", label: "Orange", hex: "#ea580c" },
+    { id: "purple", label: "Purple", hex: "#7c3aed" },
+    { id: "gray", label: "Gray", hex: "#6b7280" }
+  ]
+};
+
 const AIRBAG_OPTIONS = [
-  { id: "standard", label: "Standard Airbag", desc: "Factory-style airbag retained with OEM cover." },
-  { id: "carbon-cover", label: "Carbon Fiber Cover", desc: "Airbag retained with a custom carbon fiber cover overlay." },
-  { id: "colored-cover", label: "Colored Cover", desc: "Airbag retained with a color-matched cover to your build." },
-  { id: "no-airbag", label: "Horn Button Only", desc: "Airbag removed, replaced with a custom carbon fiber horn button." }
+  { id: "leather", label: "Leather Airbag", desc: "Airbag cover wrapped in premium full-grain leather to match your build.", price: "$75.00" },
+  { id: "alcantara", label: "Alcantara Airbag", desc: "Airbag cover wrapped in soft Alcantara for a motorsport-inspired finish.", price: "$75.00" },
+  { id: "stock", label: "Use Stock Airbag", desc: "Keep your factory OEM airbag cover as-is.", price: null }
 ];
 
 const CF_COLORS = [
@@ -277,6 +299,7 @@ export default function CustomizePage() {
   const [selectedCfStyle, setSelectedCfStyle] = useState<string | null>(null);
   const [selectedCfColor, setSelectedCfColor] = useState<string | null>(null);
   const [selectedAirbag, setSelectedAirbag] = useState<string | null>(null);
+  const [selectedAirbagColor, setSelectedAirbagColor] = useState<string | null>(null);
   const [selectedFabric, setSelectedFabric] = useState<string | null>(null);
   const [selectedFabricColor, setSelectedFabricColor] = useState<string | null>(null);
   const [selectedStitch, setSelectedStitch] = useState<string | null>(null);
@@ -307,7 +330,7 @@ export default function CustomizePage() {
   const ledRpmComplete = selectedLedRpm !== null;
   const stripeComplete = selectedStripe !== null;
   const cfStyleComplete = selectedCfStyle !== null && selectedCfColor !== null;
-  const airbagComplete = selectedAirbag !== null;
+  const airbagComplete = selectedAirbag !== null && (selectedAirbag === "stock" || selectedAirbagColor !== null);
   const fabricComplete = selectedFabric !== null && selectedFabricColor !== null;
   const stitchComplete = selectedStitch !== null;
 
@@ -739,18 +762,18 @@ export default function CustomizePage() {
             {/* Step 08 — Airbag */}
             <div className={`border border-ink-600 bg-ink-800 transition-opacity duration-300 ${vehicleComplete ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
               <StepHeader num="08" label="Airbag Options" unlocked={vehicleComplete} summary={selectedAirbag ? AIRBAG_OPTIONS.find(a => a.id === selectedAirbag)?.label ?? null : null} />
-              <div className="p-6">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="p-6 space-y-5">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {AIRBAG_OPTIONS.map((opt) => (
                     <button
                       key={opt.id}
                       type="button"
-                      onClick={() => setSelectedAirbag(opt.id)}
+                      onClick={() => { setSelectedAirbag(opt.id); setSelectedAirbagColor(null); }}
                       className={`group border text-left transition-all duration-200 ${
                         selectedAirbag === opt.id ? "border-accent bg-accent/10" : "border-ink-500 bg-ink-700 hover:border-accent hover:bg-ink-600"
                       }`}
                     >
-                      <div className="relative h-44 border-b border-ink-600 bg-ink-900 flex items-center justify-center overflow-hidden">
+                      <div className="relative h-52 border-b border-ink-600 bg-ink-900 flex items-center justify-center overflow-hidden">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">[ Add Photo Here ]</span>
                         {selectedAirbag === opt.id && (
                           <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center bg-accent">
@@ -759,15 +782,61 @@ export default function CustomizePage() {
                         )}
                         <span className={`absolute bottom-0 left-0 h-0.5 bg-accent transition-all duration-500 ${selectedAirbag === opt.id ? "w-full" : "w-0 group-hover:w-full"}`} />
                       </div>
-                      <div className="p-4">
-                        <h3 className={`heading-display text-lg font-black transition-colors ${selectedAirbag === opt.id ? "text-accent" : "text-white"}`}>
-                          {opt.label}
-                        </h3>
-                        <p className="mt-1 text-xs text-zinc-500 leading-relaxed">{opt.desc}</p>
+                      <div className="flex items-start justify-between p-5">
+                        <div>
+                          <h3 className={`heading-display text-xl font-black transition-colors ${selectedAirbag === opt.id ? "text-accent" : "text-white"}`}>
+                            {opt.label}
+                          </h3>
+                          <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{opt.desc}</p>
+                        </div>
+                        {opt.price && (
+                          <span className="ml-3 flex-shrink-0 text-sm font-black text-accent">+ {opt.price}</span>
+                        )}
                       </div>
                     </button>
                   ))}
                 </div>
+
+                {/* Color picker for leather/alcantara */}
+                {selectedAirbag && selectedAirbag !== "stock" && (
+                  <div className="border border-ink-600 bg-ink-900 p-5">
+                    <div className="mb-4 flex items-center gap-3">
+                      <span className="h-px flex-1 bg-ink-600" />
+                      <span className="text-xs font-black uppercase tracking-widest text-accent">
+                        Choose {AIRBAG_OPTIONS.find(a => a.id === selectedAirbag)?.label} Color
+                      </span>
+                      <span className="h-px flex-1 bg-ink-600" />
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {(AIRBAG_COLORS[selectedAirbag] ?? []).map((color) => (
+                        <button
+                          key={color.id}
+                          type="button"
+                          onClick={() => setSelectedAirbagColor(color.id)}
+                          className="group flex flex-col items-center gap-2"
+                        >
+                          <div
+                            className={`relative h-10 w-10 rounded-full border-2 transition-all duration-200 ${
+                              selectedAirbagColor === color.id
+                                ? "border-accent scale-110 shadow-[0_0_12px_rgba(220,38,38,0.5)]"
+                                : "border-ink-500 hover:border-accent hover:scale-105"
+                            }`}
+                            style={{ backgroundColor: color.hex }}
+                          >
+                            {selectedAirbagColor === color.id && (
+                              <div className="absolute inset-0 flex items-center justify-center rounded-full">
+                                <Check className="h-4 w-4 text-white drop-shadow" />
+                              </div>
+                            )}
+                          </div>
+                          <span className={`text-[10px] font-semibold transition-colors ${selectedAirbagColor === color.id ? "text-accent" : "text-zinc-500"}`}>
+                            {color.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -822,7 +891,7 @@ export default function CustomizePage() {
                     <span className="text-sm font-black uppercase tracking-widest text-white">Est. Total</span>
                     <span className="heading-display text-2xl font-black text-accent">
                       {selectedStyle
-                        ? `$${(410 + (selectedLedRpm === "Add Led RPM" ? 150 : 0) + (selectedCfStyle === "forged" ? 50 : 0)).toFixed(2)}`
+                        ? `$${(410 + (selectedLedRpm === "Add Led RPM" ? 150 : 0) + (selectedCfStyle === "forged" ? 50 : 0) + (selectedAirbag === "leather" || selectedAirbag === "alcantara" ? 75 : 0)).toFixed(2)}`
                         : "$—.—"}
                     </span>
                   </div>
