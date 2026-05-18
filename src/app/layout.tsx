@@ -3,6 +3,7 @@ import { Inter, Bebas_Neue } from "next/font/google";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { ParallaxBackground } from "@/components/ParallaxBackground";
 import { SITE_CONFIG } from "@/lib/config";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sans.variable} ${display.variable}`}>
       <body>
+        <ParallaxBackground />
         <AnnouncementBar />
         <Header />
         <main>{children}</main>

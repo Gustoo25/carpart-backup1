@@ -28,12 +28,12 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-ink-600 bg-ink-900/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/60 backdrop-blur-md">
         <div className="container-x flex h-16 items-center justify-between sm:h-20">
           {/* Logo */}
           <Link
             href="/"
-            className="heading-display text-2xl font-black tracking-widest text-white hover:text-accent sm:text-3xl"
+            className="heading-display text-2xl font-black tracking-widest text-white hover:text-red-200 sm:text-3xl"
           >
             {SITE_CONFIG.brandName}
           </Link>
@@ -44,7 +44,7 @@ export function Header() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`whitespace-nowrap text-sm font-bold uppercase tracking-wide transition-colors hover:text-accent ${isActive(link.href) ? "border-b-2 border-accent pb-0.5 text-accent" : "text-white"}`}
+                className={`whitespace-nowrap text-sm font-bold uppercase tracking-wide transition-colors hover:text-red-200 ${isActive(link.href) ? "border-b-2 border-white pb-0.5 text-white" : "text-white"}`}
               >
                 {link.label}
               </Link>
@@ -78,7 +78,7 @@ export function Header() {
               type="button"
               aria-label="Open cart"
               onClick={() => setCartOpen(true)}
-              className="relative rounded p-3 text-white hover:text-accent"
+              className="relative rounded p-3 text-white hover:text-red-200"
             >
               <ShoppingCart className="h-6 w-6" />
               <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-white">
@@ -89,7 +89,7 @@ export function Header() {
               type="button"
               aria-label="Open menu"
               onClick={() => setMobileNavOpen(true)}
-              className="rounded p-3 text-zinc-300 hover:text-white"
+              className="rounded p-3 text-white hover:text-red-200"
             >
               <Menu className="h-6 w-6" />
             </button>

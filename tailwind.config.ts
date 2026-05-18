@@ -6,16 +6,16 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          950: "#0a0c12",
-          900: "#0f1117",
-          800: "#161b26",
-          700: "#1c2333",
-          600: "#222d40",
-          500: "#2a3650"
+          950: "#080808",
+          900: "#111111",
+          800: "#181818",
+          700: "#202020",
+          600: "#2a2a2a",
+          500: "#333333"
         },
         accent: {
-          DEFAULT: "#f97316",
-          hover: "#ea580c"
+          DEFAULT: "#dc2626",
+          hover: "#b91c1c"
         }
       },
       fontFamily: {
@@ -24,9 +24,9 @@ const config: Config = {
       },
       backgroundImage: {
         "carbon-weave":
-          "linear-gradient(135deg, #1c2333 25%, transparent 25%), linear-gradient(225deg, #1c2333 25%, transparent 25%), linear-gradient(45deg, #1c2333 25%, transparent 25%), linear-gradient(315deg, #1c2333 25%, #0f1117 25%)",
+          "linear-gradient(135deg, #1c1c1c 25%, transparent 25%), linear-gradient(225deg, #1c1c1c 25%, transparent 25%), linear-gradient(45deg, #1c1c1c 25%, transparent 25%), linear-gradient(315deg, #1c1c1c 25%, #0d0d0d 25%)",
         "hero-fade":
-          "radial-gradient(ellipse at center, rgba(249, 115, 22, 0.12) 0%, transparent 60%), linear-gradient(180deg, #0a0c12 0%, #0f1117 100%)"
+          "linear-gradient(180deg, #080808 0%, #111111 100%)"
       },
       backgroundSize: {
         "carbon-weave": "16px 16px"

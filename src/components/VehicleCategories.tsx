@@ -24,10 +24,10 @@ export function VehicleCategories() {
         {/* Section header */}
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <div className="text-xs font-black uppercase tracking-widest text-accent">
-              Precision Fitment
+            <div className="skew-badge mb-3">
+              <span>Precision Fitment</span>
             </div>
-            <h2 className="heading-display mt-2 text-3xl font-black text-white sm:text-4xl">
+            <h2 className="heading-display text-3xl font-black text-white sm:text-4xl">
               Built For Infiniti
             </h2>
             <p className="mt-2 text-sm text-zinc-400">
@@ -51,7 +51,7 @@ export function VehicleCategories() {
               : "#vehicles";
 
             const inner = (
-              <div className="group relative aspect-square overflow-hidden border border-ink-500 bg-ink-700 transition-all duration-500 hover:border-accent hover:shadow-[0_0_30px_rgba(249,115,22,0.25)] sm:aspect-[4/3]">
+              <div className="group relative aspect-square overflow-hidden border border-ink-500 bg-ink-700 transition-all duration-500 hover:border-accent hover:shadow-[0_0_30px_rgba(220,38,38,0.4)] sm:aspect-[4/3]">
                 {/* Car image */}
                 <Image
                   src={m.image}

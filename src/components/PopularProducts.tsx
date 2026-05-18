@@ -13,18 +13,23 @@ function slugSeed(slug: string) {
 }
 
 function getOriginalPrice(product: Product): number {
-  // $200–$500 above actual price, deterministic per slug
   const extra = 20000 + (slugSeed(product.slug) % 30001);
   return product.priceCents + extra;
 }
 
+function stockCount(slug: string): number {
+  return (slugSeed(slug) % 7) + 1;
+}
+
 function MarqueeCard({ product }: { product: Product }) {
   const originalPrice = getOriginalPrice(product);
+  const left = stockCount(product.slug);
+  const lowStock = left <= 4;
 
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group relative w-56 flex-shrink-0 overflow-hidden border border-ink-500 bg-ink-800 transition-all duration-500 hover:border-accent hover:shadow-[0_0_35px_rgba(249,115,22,0.25)] sm:w-64"
+      className="group relative w-56 flex-shrink-0 overflow-hidden border border-ink-500 bg-ink-800 transition-all duration-500 hover:border-accent hover:shadow-[0_0_35px_rgba(220,38,38,0.4)] sm:w-64"
     >
       {/* Image */}
       <div className="relative h-40 overflow-hidden sm:h-48">
@@ -35,13 +40,24 @@ function MarqueeCard({ product }: { product: Product }) {
           )}
         />
         <div className="absolute inset-0 bg-carbon-weave opacity-[0.08]" />
-
-        {/* Accent bar sweeps in from left on hover */}
         <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-accent transition-all duration-500 group-hover:w-full" />
 
         <span className="absolute left-3 top-3 bg-accent px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
           Sale
         </span>
+
+        {/* Low stock */}
+        {lowStock && (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-red-400">
+              Only {left} left!
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Info */}
@@ -65,22 +81,9 @@ function MarqueeCard({ product }: { product: Product }) {
   );
 }
 
-function MarqueeRow({
-  products,
-  reverse = false
-}: {
-  products: Product[];
-  reverse?: boolean;
-}) {
+function MarqueeRow({ products }: { products: Product[] }) {
   return (
-    <div
-      className={clsx(
-        "flex gap-4",
-        reverse ? "animate-marquee-reverse" : "animate-marquee",
-        "hover:[animation-play-state:paused]"
-      )}
-    >
-      {/* Duplicate for seamless loop */}
+    <div className="flex gap-4 animate-marquee hover:[animation-play-state:paused]">
       {[...products, ...products, ...products, ...products].map((product, i) => (
         <MarqueeCard key={`${product.slug}-${i}`} product={product} />
       ))}
@@ -91,14 +94,13 @@ function MarqueeRow({
 export function PopularProducts() {
   return (
     <section id="popular" className="overflow-hidden bg-ink-950 py-20">
-      {/* Header */}
       <div className="container-x mb-10">
         <div className="flex items-end justify-between">
           <div>
-            <div className="text-xs font-black uppercase tracking-widest text-accent">
-              Best Sellers
+            <div className="skew-badge mb-3">
+              <span>Best Sellers</span>
             </div>
-            <h2 className="heading-display mt-2 text-3xl font-black text-white sm:text-4xl">
+            <h2 className="heading-display text-3xl font-black text-white sm:text-4xl">
               Popular Products
             </h2>
             <p className="mt-2 text-sm text-zinc-400">
@@ -114,12 +116,9 @@ export function PopularProducts() {
         </div>
       </div>
 
-      {/* Marquee rows */}
       <div className="relative flex flex-col gap-4">
-        {/* Fade edges */}
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-ink-950 to-transparent sm:w-32" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-ink-950 to-transparent sm:w-32" />
-
         <MarqueeRow products={ROW_ONE} />
       </div>
     </section>
